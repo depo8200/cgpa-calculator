@@ -17,11 +17,12 @@ import {
   Calculator,
   Layers,
   FileText,
-  CalendarCheck
+  CalendarCheck,
+  Share2
 } from 'lucide-react';
 import { UNIVERSITIES, getGradeClassification } from '../data/universities';
 import { ConversionMethod, UniversityFormula } from '../types';
-import { copyToClipboard } from '../utils/calculator';
+import { copyToClipboard, shareCalculatorLink } from '../utils/calculator';
 
 interface CgpaToPercentageProps {
   inputRef?: React.RefObject<HTMLInputElement | null>;
@@ -39,6 +40,7 @@ export const CgpaToPercentage: React.FC<CgpaToPercentageProps> = ({ inputRef, on
   const [calculationBreakdown, setCalculationBreakdown] = useState<string>('8.4 × 9.5 = 79.8%');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
+  const [shareFeedback, setShareFeedback] = useState<string | null>(null);
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
 
   const localInputRef = useRef<HTMLInputElement>(null);
@@ -127,6 +129,26 @@ export const CgpaToPercentage: React.FC<CgpaToPercentageProps> = ({ inputRef, on
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }
+    }
+  };
+
+  const handleShare = async () => {
+    const shareText = calculatedPercentage !== null
+      ? `My ${cgpaInput} CGPA converts to ${calculatedPercentage}% (${calculationBreakdown}) on this CGPA Calculator:`
+      : 'Convert your CGPA to percentage using CBSE & university formulas:';
+
+    const status = await shareCalculatorLink({
+      title: 'CGPA to Percentage Calculator',
+      text: shareText,
+      url: window.location.href,
+    });
+
+    if (status === 'copied') {
+      setShareFeedback('Copied link!');
+      setTimeout(() => setShareFeedback(null), 2500);
+    } else if (status === 'shared') {
+      setShareFeedback('Shared!');
+      setTimeout(() => setShareFeedback(null), 2000);
     }
   };
 
@@ -295,23 +317,23 @@ export const CgpaToPercentage: React.FC<CgpaToPercentageProps> = ({ inputRef, on
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                   Calculated Percentage
                 </span>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 flex-wrap justify-end">
                   <button
                     id="calculate-again-btn"
                     type="button"
                     onClick={handleCalculateAgain}
                     aria-label="Calculate again with a new CGPA"
-                    className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-[#434CE8] transition-colors bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-2xs cursor-pointer min-h-[38px] focus-visible:ring-2 focus-visible:ring-[#434CE8] focus-visible:outline-none"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-[#434CE8] transition-colors bg-white px-2.5 sm:px-3 py-2 rounded-lg border border-slate-200 shadow-2xs cursor-pointer min-h-[38px] focus-visible:ring-2 focus-visible:ring-[#434CE8] focus-visible:outline-none"
                   >
                     <RotateCcw className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
-                    <span>Calculate Again</span>
+                    <span>Reset</span>
                   </button>
                   <button
                     id="copy-result-btn"
                     type="button"
                     onClick={handleCopy}
                     aria-label={copied ? 'Copied calculation result to clipboard' : 'Copy calculation result'}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-[#434CE8] transition-colors bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-2xs cursor-pointer min-h-[38px] focus-visible:ring-2 focus-visible:ring-[#434CE8] focus-visible:outline-none"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-[#434CE8] transition-colors bg-white px-2.5 sm:px-3 py-2 rounded-lg border border-slate-200 shadow-2xs cursor-pointer min-h-[38px] focus-visible:ring-2 focus-visible:ring-[#434CE8] focus-visible:outline-none"
                   >
                     {copied ? (
                       <>
@@ -321,7 +343,26 @@ export const CgpaToPercentage: React.FC<CgpaToPercentageProps> = ({ inputRef, on
                     ) : (
                       <>
                         <Copy className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
-                        <span>Copy Result</span>
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                  <button
+                    id="share-result-btn"
+                    type="button"
+                    onClick={handleShare}
+                    aria-label={shareFeedback ? shareFeedback : 'Share result with friends'}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-indigo-700 hover:text-[#434CE8] bg-indigo-50/90 hover:bg-indigo-100/80 transition-colors px-2.5 sm:px-3 py-2 rounded-lg border border-indigo-200 shadow-2xs cursor-pointer min-h-[38px] focus-visible:ring-2 focus-visible:ring-[#434CE8] focus-visible:outline-none"
+                  >
+                    {shareFeedback ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
+                        <span className="text-emerald-700 font-semibold">{shareFeedback}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Share2 className="w-3.5 h-3.5 text-[#434CE8]" aria-hidden="true" />
+                        <span>Share</span>
                       </>
                     )}
                   </button>

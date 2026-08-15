@@ -11,13 +11,15 @@ import {
   CalendarCheck,
   GraduationCap,
   School,
-  ArrowRight
+  ArrowRight,
+  Share2
 } from 'lucide-react';
 import { SubjectGrade, SemesterData, NavTab } from '../types';
 import {
   calculateSgpaFromSubjects,
   calculateCgpaFromSemesters,
-  copyToClipboard
+  copyToClipboard,
+  shareCalculatorLink
 } from '../utils/calculator';
 
 const GRADE_POINTS_MAP: { [key: string]: number } = {
@@ -56,6 +58,7 @@ export const SgpaCalculator: React.FC<SgpaCalculatorProps> = ({ onNavigateTab })
   ]);
 
   const [copied, setCopied] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState<string | null>(null);
 
   // Calculate SGPA for current semester using helper
   const { sgpa: calculatedSgpa, totalCredits, totalPoints: totalWeightedPoints } = calculateSgpaFromSubjects(subjects);
@@ -126,6 +129,26 @@ export const SgpaCalculator: React.FC<SgpaCalculatorProps> = ({ onNavigateTab })
     if (success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleShare = async () => {
+    const shareText = activeSubTab === 'single-semester'
+      ? `My Semester SGPA is ${calculatedSgpa} (Approx ${calculatedPct}%) calculated on this CGPA & SGPA Tracker:`
+      : `My Cumulative CGPA is ${calculatedCumulativeCgpa} across ${semesters.length} semesters (${cumulativePct}%) calculated here:`;
+
+    const status = await shareCalculatorLink({
+      title: 'SGPA & CGPA Calculator',
+      text: shareText,
+      url: window.location.href,
+    });
+
+    if (status === 'copied') {
+      setShareFeedback('Copied link!');
+      setTimeout(() => setShareFeedback(null), 2500);
+    } else if (status === 'shared') {
+      setShareFeedback('Shared!');
+      setTimeout(() => setShareFeedback(null), 2000);
     }
   };
 
@@ -310,15 +333,35 @@ export const SgpaCalculator: React.FC<SgpaCalculatorProps> = ({ onNavigateTab })
                 <div className="text-xs text-slate-600 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-2xs">
                   Approx Percentage: <strong className="text-slate-900 text-sm">{calculatedPct}%</strong> (CBSE 9.5)
                 </div>
-                <button
-                  type="button"
-                  onClick={handleCopySummary}
-                  aria-label={copied ? 'Copied SGPA summary' : 'Copy SGPA summary'}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#434CE8] hover:text-[#373ecc] bg-white px-3 py-1.5 rounded-lg border border-indigo-200 shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-[#434CE8] focus-visible:outline-none"
-                >
-                  {copied ? <Check className="w-4 h-4 text-emerald-600" aria-hidden="true" /> : <Copy className="w-4 h-4" aria-hidden="true" />}
-                  <span>{copied ? 'Copied SGPA!' : 'Copy Summary'}</span>
-                </button>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={handleCopySummary}
+                    aria-label={copied ? 'Copied SGPA summary' : 'Copy SGPA summary'}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#434CE8] hover:text-[#373ecc] bg-white px-3 py-1.5 rounded-lg border border-indigo-200 shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-[#434CE8] focus-visible:outline-none"
+                  >
+                    {copied ? <Check className="w-4 h-4 text-emerald-600" aria-hidden="true" /> : <Copy className="w-4 h-4" aria-hidden="true" />}
+                    <span>{copied ? 'Copied SGPA!' : 'Copy Summary'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleShare}
+                    aria-label={shareFeedback ? shareFeedback : 'Share SGPA with friends'}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-700 hover:text-[#434CE8] bg-indigo-50/90 hover:bg-indigo-100/80 px-3 py-1.5 rounded-lg border border-indigo-200 shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-[#434CE8] focus-visible:outline-none"
+                  >
+                    {shareFeedback ? (
+                      <>
+                        <Check className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+                        <span className="text-emerald-700 font-semibold">{shareFeedback}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Share2 className="w-4 h-4 text-[#434CE8]" aria-hidden="true" />
+                        <span>Share SGPA</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -432,15 +475,35 @@ export const SgpaCalculator: React.FC<SgpaCalculatorProps> = ({ onNavigateTab })
                 <div className="text-xs font-medium text-slate-900 bg-white px-3.5 py-2 rounded-lg shadow-sm">
                   Equivalent Percentage: <strong className="text-[#434CE8] text-sm">{cumulativePct}%</strong>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleCopySummary}
-                  aria-label={copied ? 'Copied CGPA summary' : 'Copy CGPA summary'}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-white hover:bg-white/10 bg-white/20 px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
-                >
-                  {copied ? <Check className="w-4 h-4 text-emerald-300" aria-hidden="true" /> : <Copy className="w-4 h-4" aria-hidden="true" />}
-                  <span>{copied ? 'Copied CGPA!' : 'Copy Summary'}</span>
-                </button>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={handleCopySummary}
+                    aria-label={copied ? 'Copied CGPA summary' : 'Copy CGPA summary'}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-white hover:bg-white/10 bg-white/20 px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                  >
+                    {copied ? <Check className="w-4 h-4 text-emerald-300" aria-hidden="true" /> : <Copy className="w-4 h-4" aria-hidden="true" />}
+                    <span>{copied ? 'Copied CGPA!' : 'Copy Summary'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleShare}
+                    aria-label={shareFeedback ? shareFeedback : 'Share CGPA with friends'}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-white hover:bg-white/20 bg-white/15 border border-white/20 px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                  >
+                    {shareFeedback ? (
+                      <>
+                        <Check className="w-4 h-4 text-emerald-300" aria-hidden="true" />
+                        <span className="text-emerald-200 font-semibold">{shareFeedback}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Share2 className="w-4 h-4 text-white" aria-hidden="true" />
+                        <span>Share CGPA</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

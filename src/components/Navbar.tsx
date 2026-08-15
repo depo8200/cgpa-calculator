@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Calculator, Menu, X } from 'lucide-react';
+import { Calculator, Menu, X, Share2, Check } from 'lucide-react';
 import { NavTab } from '../types';
+import { shareCalculatorLink } from '../utils/calculator';
 
 interface NavbarProps {
   activeTab: NavTab;
@@ -14,6 +15,23 @@ export const Navbar: React.FC<NavbarProps> = ({
   onGetStartedClick,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState<string | null>(null);
+
+  const handleShare = async () => {
+    const status = await shareCalculatorLink({
+      title: 'CGPA to Percentage Calculator',
+      text: 'Calculate and convert your CGPA, SGPA, and Percentage using verified CBSE & University formulas.',
+      url: window.location.href,
+    });
+
+    if (status === 'copied') {
+      setShareFeedback('Link copied!');
+      setTimeout(() => setShareFeedback(null), 2500);
+    } else if (status === 'shared') {
+      setShareFeedback('Shared!');
+      setTimeout(() => setShareFeedback(null), 2000);
+    }
+  };
 
   const navItems: { id: NavTab; label: string }[] = [
     { id: 'cgpa-to-pct', label: 'CGPA to %' },
@@ -82,7 +100,27 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
 
           {/* Right Action Button */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2.5">
+            <button
+              id="share-calculator-nav-btn"
+              type="button"
+              onClick={handleShare}
+              aria-label="Share calculator link with friends"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 hover:text-[#434CE8] bg-slate-100/80 hover:bg-indigo-50 active:bg-indigo-100 rounded-lg border border-slate-200/80 transition-all duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#434CE8] focus-visible:outline-none"
+            >
+              {shareFeedback ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+                  <span className="text-emerald-700 font-semibold text-xs">{shareFeedback}</span>
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-4 h-4 text-slate-500" aria-hidden="true" />
+                  <span>Share</span>
+                </>
+              )}
+            </button>
+
             <button
               id="get-started-nav-btn"
               type="button"
@@ -136,7 +174,26 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </button>
           ))}
-          <div className="pt-2">
+          <div className="pt-2 space-y-2">
+            <button
+              id="mobile-share-btn"
+              type="button"
+              onClick={handleShare}
+              className="w-full text-center py-3 min-h-[44px] text-sm font-medium text-slate-700 hover:text-[#434CE8] bg-slate-100/90 active:bg-indigo-50 rounded-lg border border-slate-200/90 flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-[#434CE8] focus-visible:outline-none cursor-pointer"
+            >
+              {shareFeedback ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+                  <span className="text-emerald-700 font-semibold">{shareFeedback}</span>
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-4 h-4 text-slate-500" aria-hidden="true" />
+                  <span>Share with Classmates</span>
+                </>
+              )}
+            </button>
+
             <button
               id="mobile-get-started-btn"
               type="button"

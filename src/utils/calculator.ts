@@ -32,6 +32,41 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 }
 
 /**
+ * Shares calculator link or result via Web Share API with clipboard copy fallback.
+ * Returns 'shared' | 'copied' | 'failed'
+ */
+export async function shareCalculatorLink(options: {
+  title?: string;
+  text?: string;
+  url?: string;
+}): Promise<'shared' | 'copied' | 'failed'> {
+  const shareTitle = options.title || 'CGPA to Percentage Calculator';
+  const shareText = options.text || 'Convert your CGPA to percentage, calculate semester SGPA, and explore university formulas.';
+  const shareUrl = options.url || window.location.href;
+
+  if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare && navigator.canShare({ title: shareTitle, text: shareText, url: shareUrl })) {
+    try {
+      await navigator.share({
+        title: shareTitle,
+        text: shareText,
+        url: shareUrl,
+      });
+      return 'shared';
+    } catch (err: any) {
+      // If user cancelled the share dialog (AbortError), treat as peaceful dismiss
+      if (err?.name === 'AbortError') {
+        return 'failed';
+      }
+    }
+  }
+
+  // Fallback to copying URL + text to clipboard
+  const fallbackPayload = `${shareText}\n${shareUrl}`;
+  const copied = await copyToClipboard(fallbackPayload);
+  return copied ? 'copied' : 'failed';
+}
+
+/**
  * Converts a 10-point CGPA into a percentage score based on the chosen method.
  */
 export function convertCgpaToPercentage(
