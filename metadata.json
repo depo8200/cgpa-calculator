@@ -1,0 +1,6 @@
+{
+  "name": "CGPA to Percentage Calculator",
+  "description": "Convert CGPA to percentage instantly with standard CBSE 9.5 multiplier, university conversion formulas, percentage to CGPA calculator, and semester SGPA calculation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

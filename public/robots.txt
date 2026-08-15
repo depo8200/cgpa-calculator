@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Important CSS, JavaScript, and font assets are explicitly allowed
+Allow: /assets/
+Allow: /src/
+
+# Sitemap location
+Sitemap: https://ais-pre-tew7rfhxd6ik4acvv5a3tu-323285058055.asia-east1.run.app/sitemap.xml
